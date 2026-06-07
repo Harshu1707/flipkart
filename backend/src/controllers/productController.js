@@ -31,7 +31,7 @@ exports.list = asyncHandler(async (req, res) => {
 });
 
 exports.featured = asyncHandler(async (_req, res) => {
-  const products = await query('SELECT p.*, c.name category_name FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.is_featured = 1 AND p.is_active = 1 ORDER BY p.created_at DESC LIMIT 12');
+  const products = await query('SELECT p.*, c.name category_name FROM products p LEFT JOIN categories c ON c.id=p.category_id WHERE p.is_featured = 1 AND p.is_active = 1 ORDER BY p.created_at DESC LIMIT 16');
   res.json({ success: true, data: await attachImages(products) });
 });
 

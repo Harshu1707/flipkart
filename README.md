@@ -18,7 +18,7 @@ A responsive, production-oriented e-commerce starter built with React, Tailwind 
 - REST APIs with validation, rate limiting, Helmet, CORS, and centralized errors
 - Cloudinary multipart image upload endpoint
 - Razorpay order creation and payment signature verification
-- MySQL schema and seed data
+- MySQL schema and seed data with 10 categories and 50 sample products
 
 ## Project Structure
 

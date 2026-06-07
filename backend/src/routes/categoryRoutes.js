@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const category = require('../controllers/categoryController');
+const { authenticate, authorize } = require('../middleware/auth');
+const { validate } = require('../middleware/error');
+const { categoryRules } = require('../validators');
+router.get('/', category.list);
+router.post('/', authenticate, authorize('admin'), categoryRules, validate, category.create);
+router.put('/:id', authenticate, authorize('admin'), category.update);
+router.delete('/:id', authenticate, authorize('admin'), category.remove);
+module.exports = router;

@@ -1,0 +1,12 @@
+const router = require('express').Router();
+const { authenticate, authorize } = require('../middleware/auth');
+router.get('/health', (_req, res) => res.json({ success: true, message: 'API is healthy' }));
+router.use('/auth', require('./authRoutes'));
+router.use('/products', require('./productRoutes'));
+router.use('/categories', require('./categoryRoutes'));
+router.use('/cart', authenticate, require('./cartRoutes'));
+router.use('/wishlist', authenticate, require('./wishlistRoutes'));
+router.use('/orders', authenticate, require('./orderRoutes'));
+router.use('/users', authenticate, require('./userRoutes'));
+router.use('/admin', authenticate, authorize('admin'), require('./adminRoutes'));
+module.exports = router;

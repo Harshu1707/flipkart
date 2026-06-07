@@ -1,0 +1,12 @@
+const router = require('express').Router();
+const order = require('../controllers/orderController');
+const { authenticate, authorize } = require('../middleware/auth');
+const { validate } = require('../middleware/error');
+const { orderRules } = require('../validators');
+router.post('/razorpay', order.createRazorpayOrder);
+router.post('/verify-payment', order.verifyPayment);
+router.post('/', orderRules, validate, order.placeOrder);
+router.get('/mine', order.myOrders);
+router.get('/', authenticate, authorize('admin'), order.adminOrders);
+router.put('/:id/status', authenticate, authorize('admin'), order.updateStatus);
+module.exports = router;

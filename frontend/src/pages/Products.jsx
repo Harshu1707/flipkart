@@ -1,0 +1,11 @@
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import ProductCard from '../components/ProductCard.jsx';
+import { api } from '../services/api.js';
+export default function Products() {
+  const [params, setParams] = useSearchParams(); const [products, setProducts] = useState([]); const [meta, setMeta] = useState({ page: 1, pages: 1 }); const [categories, setCategories] = useState([]);
+  useEffect(() => { api.get(`/products?${params}`).then((r) => { setProducts(r.data); setMeta(r.meta); }); }, [params]);
+  useEffect(() => { api.get('/categories').then((r) => setCategories(r.data)); }, []);
+  const update = (k, v) => { const next = new URLSearchParams(params); v ? next.set(k, v) : next.delete(k); next.set('page', '1'); setParams(next); };
+  return <div className="grid gap-6 md:grid-cols-[250px_1fr]"><aside className="card h-fit space-y-4 p-4"><h2 className="text-xl font-bold">Filters</h2><select className="w-full rounded border p-2" value={params.get('category') || ''} onChange={(e) => update('category', e.target.value)}><option value="">All categories</option>{categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}</select><input className="w-full rounded border p-2" placeholder="Min price" onChange={(e) => update('minPrice', e.target.value)} /><input className="w-full rounded border p-2" placeholder="Max price" onChange={(e) => update('maxPrice', e.target.value)} /><select className="w-full rounded border p-2" onChange={(e) => update('sort', e.target.value)}><option value="newest">Newest</option><option value="price_asc">Price: Low to High</option><option value="price_desc">Price: High to Low</option><option value="rating">Rating</option></select></aside><section><div className="mb-4 flex items-center justify-between"><h1 className="text-2xl font-bold">Products</h1><span>{meta.total || 0} items</span></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{products.map((p) => <ProductCard key={p.id} product={p} />)}</div><div className="mt-6 flex justify-center gap-2">{Array.from({ length: meta.pages || 1 }, (_, i) => <button className="rounded border bg-white px-3 py-1" key={i} onClick={() => { const next = new URLSearchParams(params); next.set('page', i + 1); setParams(next); }}>{i + 1}</button>)}</div></section></div>;
+}

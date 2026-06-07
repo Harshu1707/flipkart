@@ -1,0 +1,16 @@
+const router = require('express').Router();
+const product = require('../controllers/productController');
+const review = require('../controllers/reviewController');
+const { authenticate, authorize } = require('../middleware/auth');
+const upload = require('../middleware/upload');
+const { validate } = require('../middleware/error');
+const { productRules, reviewRules } = require('../validators');
+router.get('/', product.list);
+router.get('/featured', product.featured);
+router.get('/:id', product.get);
+router.post('/', authenticate, authorize('admin'), productRules, validate, product.create);
+router.put('/:id', authenticate, authorize('admin'), product.update);
+router.delete('/:id', authenticate, authorize('admin'), product.remove);
+router.post('/:id/images', authenticate, authorize('admin'), upload.array('images', 6), product.uploadImages);
+router.post('/:productId/reviews', authenticate, reviewRules, validate, review.create);
+module.exports = router;

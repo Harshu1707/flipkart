@@ -1,0 +1,116 @@
+CREATE DATABASE IF NOT EXISTS flipkart_clone CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE flipkart_clone;
+
+CREATE TABLE users (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  avatar_url VARCHAR(500),
+  role ENUM('user','admin') NOT NULL DEFAULT 'user',
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE categories (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  slug VARCHAR(160) NOT NULL UNIQUE,
+  image_url VARCHAR(500),
+  sort_order INT NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE products (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  category_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(220) NOT NULL,
+  slug VARCHAR(240) NOT NULL UNIQUE,
+  brand VARCHAR(120),
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL,
+  mrp DECIMAL(10,2) NOT NULL,
+  stock INT NOT NULL DEFAULT 0,
+  rating_avg DECIMAL(3,2) NOT NULL DEFAULT 0,
+  rating_count INT NOT NULL DEFAULT 0,
+  is_featured TINYINT(1) NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FULLTEXT KEY ft_products (name, brand, description),
+  CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE TABLE product_images (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  product_id BIGINT UNSIGNED NOT NULL,
+  url VARCHAR(500) NOT NULL,
+  public_id VARCHAR(255),
+  is_primary TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_images_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE cart_items (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_cart_user_product (user_id, product_id),
+  CONSTRAINT fk_cart_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cart_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE wishlist_items (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_wishlist_user_product (user_id, product_id),
+  CONSTRAINT fk_wishlist_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_wishlist_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE orders (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  total_amount DECIMAL(10,2) NOT NULL,
+  payment_method ENUM('cod','razorpay') NOT NULL DEFAULT 'cod',
+  payment_id VARCHAR(160),
+  payment_status ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  shipping_address JSON NOT NULL,
+  status ENUM('placed','packed','shipped','delivered','cancelled') NOT NULL DEFAULT 'placed',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE order_items (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED,
+  product_name VARCHAR(220) NOT NULL,
+  quantity INT NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+);
+
+CREATE TABLE reviews (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  rating TINYINT NOT NULL,
+  comment TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_review_user_product (user_id, product_id),
+  CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CHECK (rating BETWEEN 1 AND 5)
+);

@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body { @apply bg-slate-100 text-slate-900 antialiased; }
+.btn-primary { @apply rounded bg-flipkart-blue px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-60; }
+.card { @apply rounded-lg bg-white shadow-sm ring-1 ring-slate-200; }
